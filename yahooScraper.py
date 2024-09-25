@@ -50,30 +50,37 @@ def real_time_prices(stock_code):
             after = {}
 
         info = get_stock_info(web_content, 'container yf-tx3nkj')
-        print(info)
-
-        pattern = web_content_div(web_content, '')
-        try:
-            latest_pattern = pattern[0]
-        except IndexError:
-            latest_pattern = []
     except ConnectionError:
         day = {}
         after = {}
         info = {}
     return day, after, info
 
-"""
 Stock = ['NVDA', 'TIGR', 'MTTR']
-for s in Stock:
-    print("Ticker: " + s)
-    lst = real_time_prices(s)
-    for key, val in lst[0].items():
-        print(key + ": " + val)
-    if lst[1]:
-        print('\nAfter Hours:')
-        for key, val in lst[1].items():
-            print(key + ": " + val)
-    print('\n')
-lst = real_time_prices('NVDA')
-"""
+
+while (True):
+    info = []
+    for s in Stock:
+        time_stamp = datetime.datetime.now()
+        time_stamp = time_stamp.strftime("%Y-%m-%d %H:%M:%S")
+        lst = real_time_prices(s)
+        day = lst[0]
+        after = lst[1]
+        inf = lst[2]
+        if not after:
+            info.append(s)
+            info.extend([day['price']])
+            info.extend([day['change']])
+            info.extend([day['perChange']])
+        else:
+            info.append(s)
+            info.extend([after['price']])
+            info.extend([after['change']])
+            info.extend([after['perChange']])
+        info.extend([inf['Volume']])
+        info.extend([inf['1y Target Est']])
+        col = [time_stamp]
+        col.extend(info)
+        df = pd.DataFrame(col)
+        df = df.T
+    df.to_csv(str(time_stamp[0:11] + 'stock data.csv'), mode='a', header=False)
